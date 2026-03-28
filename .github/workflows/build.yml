@@ -1,0 +1,37 @@
+name: Build Artifacts
+run-name: Build Artifacts
+
+on:
+  workflow_dispatch:
+
+jobs:
+  compile:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: llvm
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: amd64
+
+    - name: Configure CMake
+      run: cmake --preset default
+
+    - name: Build
+      run: cmake --build --preset default
+
+    - name: Create archive
+      shell: cmd
+      run: tar -C build\bin -acf build\llvm-wasm.zip clang.exe wasm-ld.exe
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: llvm-wasm
+        path: build\llvm-wasm.zip
+        compression-level: 0
+        overwrite: true
